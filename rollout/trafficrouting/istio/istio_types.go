@@ -37,6 +37,21 @@ type TLSMatchAttributes struct {
 	SourceNamespace    string            `json:"sourceNamespace,omitempty"`
 }
 
+// VirtualServiceTCPRoute is a TLS route in a VirtualService
+type VirtualServiceTCPRoute struct {
+	Match []L4MatchAttributes              `json:"match,omitempty"`
+	Route []VirtualServiceRouteDestination `json:"route,omitempty"`
+}
+
+// L4MatchAttributes is the route matcher for a TCP route in a VirtualService
+type L4MatchAttributes struct {
+	DestinationSubnets []string          `json:"destinationSubnets,omitempty"`
+	Port               int64             `json:"port,omitempty"`
+	SourceLabels       map[string]string `json:"sourceLabels,omitempty"`
+	Gateways           []string          `json:"gateways,omitempty"`
+	SourceNamespace    string            `json:"sourceNamespace,omitempty"`
+}
+
 // VirtualServiceRouteDestination is a destination within
 // { VirtualServiceHTTPRoute, VirtualServiceTLSRoute }
 type VirtualServiceRouteDestination struct {

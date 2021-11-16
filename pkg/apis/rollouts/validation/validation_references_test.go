@@ -458,7 +458,7 @@ func TestValidateVirtualService(t *testing.T) {
 		vsvc := unstructured.StrToUnstructuredUnsafe(failCaseNoRoutesVsvc)
 		allErrs := ValidateVirtualService(ro, *vsvc)
 		assert.Len(t, allErrs, 1)
-		expectedErr := field.Invalid(field.NewPath("spec", "strategy", "canary", "trafficRouting", "istio", "virtualService", "name"), "istio-vsvc", "Unable to get HTTP and/or TLS routes for Istio VirtualService")
+		expectedErr := field.Invalid(field.NewPath("spec", "strategy", "canary", "trafficRouting", "istio", "virtualService", "name"), "istio-vsvc", "Unable to get HTTP and/or TLS and/or TCP routes for Istio VirtualService")
 		assert.Equal(t, expectedErr.Error(), allErrs[0].Error())
 	})
 }

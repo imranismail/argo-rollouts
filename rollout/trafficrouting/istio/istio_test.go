@@ -453,7 +453,8 @@ func TestHttpReconcileWeightsBaseCase(t *testing.T) {
 		obj := unstructuredutil.StrToUnstructuredUnsafe(vsvc)
 		vsvcRoutes := r.rollout.Spec.Strategy.Canary.TrafficRouting.Istio.VirtualService.Routes
 		vsvcTLSRoutes := r.rollout.Spec.Strategy.Canary.TrafficRouting.Istio.VirtualService.TLSRoutes
-		modifiedObj, _, err := r.reconcileVirtualService(obj, vsvcRoutes, vsvcTLSRoutes, 10)
+		vsvcTCPRoutes := r.rollout.Spec.Strategy.Canary.TrafficRouting.Istio.VirtualService.TCPRoutes
+		modifiedObj, _, err := r.reconcileVirtualService(obj, vsvcRoutes, vsvcTLSRoutes, vsvcTCPRoutes, 10)
 		assert.Nil(t, err)
 		assert.NotNil(t, modifiedObj)
 
@@ -482,7 +483,8 @@ func TestTlsReconcileWeightsBaseCase(t *testing.T) {
 		obj := unstructuredutil.StrToUnstructuredUnsafe(vsvc)
 		vsvcRoutes := r.rollout.Spec.Strategy.Canary.TrafficRouting.Istio.VirtualService.Routes
 		vsvcTLSRoutes := r.rollout.Spec.Strategy.Canary.TrafficRouting.Istio.VirtualService.TLSRoutes
-		modifiedObj, _, err := r.reconcileVirtualService(obj, vsvcRoutes, vsvcTLSRoutes, 30)
+		vsvcTCPRoutes := r.rollout.Spec.Strategy.Canary.TrafficRouting.Istio.VirtualService.TCPRoutes
+		modifiedObj, _, err := r.reconcileVirtualService(obj, vsvcRoutes, vsvcTLSRoutes, vsvcTCPRoutes, 30)
 		assert.Nil(t, err)
 		assert.NotNil(t, modifiedObj)
 
@@ -510,7 +512,8 @@ func TestTlsSniReconcileWeightsBaseCase(t *testing.T) {
 	obj := unstructuredutil.StrToUnstructuredUnsafe(regularTlsSniVsvc)
 	vsvcRoutes := r.rollout.Spec.Strategy.Canary.TrafficRouting.Istio.VirtualService.Routes
 	vsvcTLSRoutes := r.rollout.Spec.Strategy.Canary.TrafficRouting.Istio.VirtualService.TLSRoutes
-	modifiedObj, _, err := r.reconcileVirtualService(obj, vsvcRoutes, vsvcTLSRoutes, 30)
+	vsvcTCPRoutes := r.rollout.Spec.Strategy.Canary.TrafficRouting.Istio.VirtualService.TCPRoutes
+	modifiedObj, _, err := r.reconcileVirtualService(obj, vsvcRoutes, vsvcTLSRoutes, vsvcTCPRoutes, 30)
 	assert.Nil(t, err)
 	assert.NotNil(t, modifiedObj)
 
@@ -538,7 +541,8 @@ func TestTlsPortAndSniReconcileWeightsBaseCase(t *testing.T) {
 	obj := unstructuredutil.StrToUnstructuredUnsafe(regularTlsSniVsvc)
 	vsvcRoutes := r.rollout.Spec.Strategy.Canary.TrafficRouting.Istio.VirtualService.Routes
 	vsvcTLSRoutes := r.rollout.Spec.Strategy.Canary.TrafficRouting.Istio.VirtualService.TLSRoutes
-	modifiedObj, _, err := r.reconcileVirtualService(obj, vsvcRoutes, vsvcTLSRoutes, 30)
+	vsvcTCPRoutes := r.rollout.Spec.Strategy.Canary.TrafficRouting.Istio.VirtualService.TCPRoutes
+	modifiedObj, _, err := r.reconcileVirtualService(obj, vsvcRoutes, vsvcTLSRoutes, vsvcTCPRoutes, 30)
 	assert.Nil(t, err)
 	assert.NotNil(t, modifiedObj)
 
@@ -563,7 +567,8 @@ func TestReconcileWeightsBaseCase(t *testing.T) {
 	obj := unstructuredutil.StrToUnstructuredUnsafe(regularMixedVsvc)
 	vsvcRoutes := r.rollout.Spec.Strategy.Canary.TrafficRouting.Istio.VirtualService.Routes
 	vsvcTLSRoutes := r.rollout.Spec.Strategy.Canary.TrafficRouting.Istio.VirtualService.TLSRoutes
-	modifiedObj, _, err := r.reconcileVirtualService(obj, vsvcRoutes, vsvcTLSRoutes, 20)
+	vsvcTCPRoutes := r.rollout.Spec.Strategy.Canary.TrafficRouting.Istio.VirtualService.TCPRoutes
+	modifiedObj, _, err := r.reconcileVirtualService(obj, vsvcRoutes, vsvcTLSRoutes, vsvcTCPRoutes, 20)
 	assert.Nil(t, err)
 	assert.NotNil(t, modifiedObj)
 
@@ -783,8 +788,9 @@ func TestInvalidPatches(t *testing.T) {
 	{
 		invalidHTTPRoute := make([]interface{}, 1)
 		invalidTlsRoute := make([]interface{}, 1)
+		invalidTcpRoute := make([]interface{}, 1)
 		invalidHTTPRoute[0] = "not a map"
-		err := patches.patchVirtualService(invalidHTTPRoute, invalidTlsRoute)
+		err := patches.patchVirtualService(invalidHTTPRoute, invalidTlsRoute, invalidTcpRoute)
 		assert.Error(t, err, invalidCasting, "http[]", "map[string]interface")
 	}
 	{
@@ -794,7 +800,8 @@ func TestInvalidPatches(t *testing.T) {
 			},
 		}
 		invalidTlsRoute := make([]interface{}, 1)
-		err := patches.patchVirtualService(invalidHTTPRoute, invalidTlsRoute)
+		invalidTcpRoute := make([]interface{}, 1)
+		err := patches.patchVirtualService(invalidHTTPRoute, invalidTlsRoute, invalidTcpRoute)
 		assert.Error(t, err, invalidCasting, "http[].route", "[]interface")
 	}
 	{
@@ -806,7 +813,8 @@ func TestInvalidPatches(t *testing.T) {
 			},
 		}
 		invalidTlsRoute := make([]interface{}, 1)
-		err := patches.patchVirtualService(invalidHTTPRoute, invalidTlsRoute)
+		invalidTCPRoute := make([]interface{}, 1)
+		err := patches.patchVirtualService(invalidHTTPRoute, invalidTlsRoute, invalidTCPRoute)
 		assert.Error(t, err, invalidCasting, "http[].route[].destination", "map[string]interface")
 	}
 }
@@ -1376,7 +1384,7 @@ func TestMultipleVirtualServiceReconcileWeightsBaseCase(t *testing.T) {
 
 	// Choosing the second virtual service i.e., secondary
 	vsvc := mr.rollout.Spec.Strategy.Canary.TrafficRouting.Istio.VirtualServices[0]
-	modifiedObj, _, err := mr.reconcileVirtualService(obj, vsvc.Routes, vsvc.TLSRoutes, 20)
+	modifiedObj, _, err := mr.reconcileVirtualService(obj, vsvc.Routes, vsvc.TLSRoutes, vsvc.TCPRoutes, 20)
 	assert.Nil(t, err)
 	assert.NotNil(t, modifiedObj)
 

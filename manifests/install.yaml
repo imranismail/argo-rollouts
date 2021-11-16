@@ -10423,6 +10423,14 @@ spec:
                                     items:
                                       type: string
                                     type: array
+                                  tcpRoutes:
+                                    items:
+                                      properties:
+                                        port:
+                                          format: int64
+                                          type: integer
+                                      type: object
+                                    type: array
                                   tlsRoutes:
                                     items:
                                       properties:
@@ -10446,6 +10454,14 @@ spec:
                                     routes:
                                       items:
                                         type: string
+                                      type: array
+                                    tcpRoutes:
+                                      items:
+                                        properties:
+                                          port:
+                                            format: int64
+                                            type: integer
+                                        type: object
                                       type: array
                                     tlsRoutes:
                                       items:
