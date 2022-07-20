@@ -33,6 +33,16 @@ spec:
     - destination:
         host: rollouts-demo-canary
       weight: 0
+  tcp:
+  - match:
+    - port: 8020
+    route:
+    - destination:
+        host: rollouts-demo-stable
+      weight: 100
+    - destination:
+        host: rollouts-demo-canary
+      weight: 0
 
 ---
 apiVersion: networking.istio.io/v1alpha3
@@ -63,6 +73,16 @@ spec:
       sniHosts:
       - reviews.bookinfo.com
       - localhost
+    route:
+    - destination:
+        host: rollouts-demo-stable
+      weight: 100
+    - destination:
+        host: rollouts-demo-canary
+      weight: 0
+  tcp:
+  - match:
+    - port: 8020
     route:
     - destination:
         host: rollouts-demo-stable
